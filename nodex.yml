@@ -1,0 +1,71 @@
+---
+- hosts: some_ip
+  #  created with 
+  # import crypt,getpass; print crypt.crypt(getpass.getpass(),crypt.mksalt((crypt.METHOD_SHA512)))
+    password : $6$v3/mo.h5CbbuybsE$1uhIVFu3vVOoPg/pkP5.ZJEWXC/sXts9FtLeNzju5HyofRJbQUPIFBZxvvuLYWOOhTg5fW/nzXqEbq4BX59bi/
+
+  gather_facts: no
+ 
+  tasks:
+    - name: ping test
+      ping:
+
+   - name: create stack user and give sudo permission
+     user: name=stack state=present groups="sudo" password={{password}}
+     become: yes
+
+#  - name: giving sudo permission to the stack user - copying
+#    copy: src=/etc/sudoers dest=/etc/sudoers.tmp remote_src=true
+
+#  - name: adding the stack user to sudoers file
+#    lineinfile: "dest=/etc/sudoers.tmp state=present regexp='^%stack' line='%stack ALL=(ALL) NOPASSWD: ALL'"
+
+#  - name: overwriting the sudoers file
+#    shell: cp -f /etc/sudoers.tmp /etc/sudoers
+
+   - name: Allow 'stack' group to have passwordless sudo
+     become: yes
+     lineinfile:
+       dest: /etc/sudoers
+       state: present
+       regexp: '^%stack'
+       line: '%stack ALL=(ALL) NOPASSWD: ALL'
+
+    - name: install ntp
+      apt: name=ntp state=installed update_cache=yes
+      become: yes
+      become_user: stack
+
+    - name: starting ntp service
+      become: yes
+      become_user: stack
+# cehck this command
+      command: /usr/bin/ntpq -d or service ntp restart
+
+    
+    # get the latest nove source from the github or specified path
+    - name: Get the latest project source from github
+      become: yes
+      become_user: stack
+    
+      get_url:
+         url:
+
+         dest: /opt/nova
+
+    # Use .j2 template method to invoke the configuration file or get from github
+    - name: Get the configuration of the specified project from GITHUB
+      become: yes
+      become_user: stack
+      get_url:
+         url: https://raw.githubusercontent.com/cooldharma06/ansible-nodex/master/nova.conf
+         dest: /opt/stack/nova/
+      get_url:
+         url: https://raw.githubusercontent.com/cooldharma06/ansible-nodex/master/nova.conf
+         dest: /opt/stack/nova/
+
+
+    - name: Install the required packages from the repository
+      become: yes
+      become_user: stack
+      apt: name=sysfsutils state=installed update_cache=yes
