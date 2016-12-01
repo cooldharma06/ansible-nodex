@@ -40,7 +40,7 @@
       become: yes
       become_user: stack
 # cehck this command
-      command: /usr/bin/ntpq -d or service ntp restart
+      command: service ntp restart
 
     
     # get the latest nove source from the github or specified path
@@ -49,8 +49,7 @@
       become_user: stack
     
       get_url:
-         url:
-
+         url: https://github.com/openstack/nova.git
          dest: /opt/nova
 
     # Use .j2 template method to invoke the configuration file or get from github
@@ -61,7 +60,7 @@
          url: https://raw.githubusercontent.com/cooldharma06/ansible-nodex/master/nova.conf
          dest: /opt/stack/nova/
       get_url:
-         url: https://raw.githubusercontent.com/cooldharma06/ansible-nodex/master/nova.conf
+         url: https://raw.githubusercontent.com/cooldharma06/ansible-nodex/master/nova-compute.conf
          dest: /opt/stack/nova/
 
 
@@ -69,3 +68,11 @@
       become: yes
       become_user: stack
       apt: name=sysfsutils state=installed update_cache=yes
+
+
+    - name: start the Component installer
+      become: yes
+      become_user: stack
+      command: cd /opt/stack/nova/ ; python setup.py install
+
+
